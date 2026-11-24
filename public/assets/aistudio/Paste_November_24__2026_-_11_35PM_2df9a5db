@@ -1,0 +1,1043 @@
+Based on: NULL_Social_Monitor_PRD_v1.md and the supplied dashboard reference image
+Target model: Carbon 4, low-effort mode
+Delivery target: One focused implementation day; no multi-week redesign
+Product scope: Social Media Monitoring only
+Platforms: YouTube, TikTok, Instagram, Facebook, X, LinkedIn
+Existing stack: React 18 + Vite + Tailwind + Lucide; NestJS + TypeScript + Prisma + PostgreSQL; existing Docker deployment; existing n8n Cloud automation workflows
+Highest-priority execution constraint: minimize Carbon 4 token/credit usage. Reuse existing code and make the smallest verified changes. Do not rebuild, rewrite, refactor, or repeatedly inspect working parts. Prefer targeted searches and small patches over reading or regenerating entire files. Complete the MVP with one bounded inspection pass, focused implementation, and targeted verification. Do not spend tokens narrating plans, exploring unrelated code, generating alternative designs, or producing repetitive reports.  
+
+PART I — PRODUCT AND PRD REVIEW
+1. Executive assessment
+The PRD has a sound product direction. The core idea is clear: a detailed, dark, analytics-first Social Media Monitoring cockpit for one personal brand (null), not another general-purpose productivity application.
+
+The strongest parts of the PRD are:
+1. A clear single-purpose product boundary: Social Media Monitoring only.
+2. A detailed primary-user persona that prefers depth, source transparency, and drill-downs.
+3. A strong visual reference with a recognizable analytics hierarchy.
+4. A useful information architecture: Overview, Content, Analytics, Audience, Compare, Accounts, Sync, Analyst, Settings.
+5. Good metric semantics: null is not zero; Views, Reach, and Impressions are not interchangeable; historical observations need source and timestamps.
+6. An existing Backend and n8n automation architecture that must be reused rather than replaced.
+7. A clear distinction between API data, CSV data, mock data, and unavailable data.
+The PRD does not need another feature expansion. It needs a more deterministic build sequence, explicit screen behavior, stricter data contracts, and guardrails that prevent a low-effort coding model from inventing routes, models, metrics, or UI behavior.
+2. What the visual reference actually communicates
+The supplied reference is a dark Meta-style performance dashboard, approximately 1117 × 797 px. Its defining design properties are:
+- A very narrow vertical icon rail on the left.
+- A compact top bar with search on the left and platform/account selectors on the right.
+- A page title directly below the top bar.
+- A first row of four compact KPI cards.
+- A dense two-column dashboard body, with a wide main column and a narrower right rail.
+- A large audience-location panel in the main column: map at left, impression total and country percentages at right.
+- A right-side content-type breakdown panel with compact segmented selectors and horizontal distribution bars.
+- A right-side profile-activity panel with a short list of activity metrics and period-over-period deltas.
+- A wide trend chart in the lower main column, with a Daily / Cumulative switch and a restrained legend.
+- A small AI Assistant insight panel in the lower right, visually subordinate to the analytics.
+- Near-black backgrounds, thin charcoal borders, compact type, muted secondary text, restrained white/gray chart lines, and no decorative gradients.
+The target is to reuse this layout logic and information density. Do not copy Meta branding, labels, sample values, or account details. Do not reuse any numbers from the screenshot as real data.
+Visual rules to implement
+- Desktop-first layout at 1280 px and wider.
+- Sidebar: narrow icon rail, approximately 56–64 px; expanded navigation may be wider but must stay compact.
+- Main content: consistent 16–24 px spacing; dense panels aligned to a clear grid.
+- Main dashboard grid: approximately 70% primary column / 30% secondary rail, adapting based on available width.
+- KPI cards: compact height, aligned numeric baselines, label + tooltip + value + comparison delta.
+- Panels: subtle 1 px borders, restrained corner radius, consistent panel padding.
+- Text: compact but readable; use tabular numerals for metrics.
+- Charts: thin grid lines, readable date labels, precise tooltips, clear units, explicit metric selection.
+- Colors: near-black background, dark-gray panel surfaces, fine charcoal borders, white primary text, gray secondary text. Use one restrained accent for selected states; green only for real positive status, amber for warnings/stale data, red for real errors.
+- No neon cyberpunk styling, oversized headings, oversized cards, decorative glows, random gradients, giant empty panels, or an excessive pill/badge interface.
+- Keep the UI information-rich without making it visually noisy. Density must come from well-organized data, not from cramming text together.
+3. PRD strengths that must be preserved
+The implementation must retain these decisions from PRD v1.0:
+- The product is only Social Media Monitoring.
+- Do not surface Chronos, time tracking, Pomodoro, project management, GitHub engineering dashboards, knowledge graph, documents vault, invoicing, CRM, or unrelated productivity tools in the Social Monitor interface.
+- Do not delete those unrelated systems from the repository or Backend.
+- All six agreed platforms must appear in the product, with honest readiness and connection states.
+- Overview is the default landing page.
+- Content Library and Content Detail are core screens, not optional decorative cards.
+- Analytics are platform-aware and time-window-aware.
+- Audience insights render only when source data supports them.
+- Cross-platform comparisons must not imply false equivalence between metrics.
+- Accounts and Sync Center must show real connection and execution states.
+- AI Analyst is evidence-first and must not invent metrics or causes.
+- Social-only module toggles must hide/show optional product areas without deleting records or disconnecting integrations.
+- Demo data must be visibly labeled and must never be persisted as real social analytics.
+- The existing NestJS Backend, Prisma models, PostgreSQL database, Docker deployment, and n8n workflows must be inspected and reused.
+4. Gaps and risks in the current PRD
+These are not reasons to expand the product. They are implementation ambiguities that the build prompt must resolve.
+4.1 Same-day P0 scope is too broad
+The PRD labels many large areas P0: Overview, six platform views, Content Library, Content Detail, platform analytics, Accounts, Sync Center, settings, module toggles, and several Backend capabilities. If the model tries to finish all of them at equal depth, it may create many shallow, inconsistent screens.
+
+Resolution: use the execution order in Part II. The minimum complete product flow is:
+
+Social-only App Shell → Verified Data Adapter → Overview → Content Library → Content Detail → Platform Analytics → Accounts → Sync Center → Settings → QA.
+
+Audience and Compare must have usable basic screens but advanced demographic maps and sophisticated indexed comparisons are conditional on real data and remaining time. The advanced conversational LLM is explicitly later.
+4.2 The app currently has no connected social accounts
+The user has not completed social account creation, Developer App setup, OAuth, or API permissions. The current n8n workflows have been built in mock mode only. Therefore a newly built UI cannot honestly show live social metrics.
+
+Resolution: support three explicit data modes:
+- REAL: read records from the existing Backend only.
+- DEMO: show isolated fixtures with a persistent, unmistakable DEMO DATA indicator.
+- EMPTY: show designed onboarding/empty states, not fake values.
+Never mix Demo and Real records in one chart or KPI. Never write Demo fixtures into production social tables. A CONNECTED badge requires a real authenticated provider test, not merely an account card or saved handle.
+4.3 Backend architecture is described, but not yet verified against source code
+The supplied architecture summary mentions models such as PlatformAccount, IntegrationCredential, SyncRun, MetricObservation, MetricAggregate, Insight, and Recommendation. Those names are hints, not proof of exact fields or routes.
+
+Resolution: inspect actual controllers, DTOs, services, Prisma schema, and migrations before writing frontend API calls or backend changes. Do not assume paths, fields, relations, enums, or endpoints from this PRD.
+4.4 Social post/content storage may be incomplete
+The known model list does not prove that a post/video entity exists or that MetricObservation can reference a content item. The Content Library and Content Detail require stable platform content IDs and metadata.
+
+Resolution: inspect the actual schema. If the necessary content entity/relations are missing, add the smallest additive model and migration following existing conventions. Reuse PlatformAccount and MetricObservation; do not duplicate them.
+4.5 Credential ownership between Backend and n8n is unresolved
+The Backend reportedly has encrypted credential support; n8n also has its own Credentials store. Storing provider tokens in both systems without an ownership policy creates duplicate secrets and inconsistent refresh/revocation behavior.
+
+Resolution: inspect the current integrations module and n8n workflow configuration. Choose one clear owner for OAuth token lifecycle. Prefer the existing Backend integration credential lifecycle if it already handles OAuth refresh safely; otherwise document the existing n8n-owned approach for this single-user MVP. Never introduce duplicate independent token stores as a shortcut.
+4.6 Metric semantics need an explicit registry
+The PRD states the right rules, but the implementation needs one source of truth for which platform supports which metric, unit, aggregation, and display behavior.
+
+Resolution: implement a typed platform metric registry/configuration. Every widget and chart must query this registry rather than scattering platform-specific if/else checks across components.
+4.7 Data availability must control the UI layout
+The reference image shows Audience Location, Total Impressions, content-type distribution, profile visits, and link clicks. These metrics will not exist for every platform, account, permission, or date range.
+
+Resolution: the design should reserve clear panel positions but render one of three states: real data, unavailable-with-reason, or no-history-yet. Do not fill unavailable panels with zeros or invented country distributions.
+4.8 Local Backend and n8n Cloud have different network boundaries
+The UI running locally can call a local API if configured. n8n Cloud cannot call localhost on the user's PC. The eventual n8n delivery path needs a secure reachable HTTPS endpoint such as a protected Cloudflare Tunnel or a hosted deployment.
+
+Resolution: do not attempt to solve the Tunnel in today's UI build. Make the API client environment-configurable and show the n8n delivery state from verified Backend data. Do not hardcode or invent a public URL.
+4.9 Module customization needs a narrow scope
+The old product became visually cluttered because optional features were treated as separate giant sections. The PRD correctly limits toggles to Social Monitor modules.
+
+Resolution: use a compact Settings section with six Social Monitor modules and dashboard widget preferences. Do not create a large Modules Hub landing page. Core data, account records, ingestion, security, and Overview cannot be disabled.
+4.10 AI Analyst is not a same-day dependency
+A reliable LLM analyst needs stable metrics, enough history, evidence retrieval, and a configured provider. None of those conditions is guaranteed today.
+
+Resolution: implement a small evidence-based Insight panel only if time allows. The full conversational AI Analyst remains disabled/coming later until data and an LLM provider are actually configured.
+5. Critical product decisions
+These decisions remove ambiguity for the coding model:
+1. App identity: NULL Social Monitor only. No general-purpose Personal OS.
+2. Primary user: one detail-oriented solo creator/technical operator managing the null brand.
+3. Primary screen: Overview dashboard.
+4. Primary visual reference: the supplied dark Meta-style analytics screenshot.
+5. Core daily path: Overview → inspect platform change → Content Library → Content Detail → Analytics → Sync Center only when needed.
+6. Data truth: existing Backend is the source of truth for app records; n8n is the collection/orchestration layer; UI is a consumer of Backend data.
+7. No direct UI-to-platform API calls.
+8. No direct UI-to-n8n analytics reads.
+9. No new Backend, database, or n8n rebuild.
+10. No fabricated metrics, timestamps, audience attributes, or connected states.
+11. No cross-platform total that claims unique reach or unique people.
+12. No universal engagement rate.
+13. No advanced AI until evidence-ready data is available.
+14. One-day scope is a timebox, not permission to fake incomplete features.
+PART II — DETAILED IMPLEMENTATION PLAN
+6. Delivery strategy for Carbon 4 in Low Effort mode
+The model should not be asked to perform open-ended product design. It must follow a fixed sequence with explicit completion gates.
+Operating rules for the model
+Token and change efficiency is a top-level requirement. Carbon 4 is running in Low Effort mode. Use a reuse-first, minimal-diff workflow:
+1. Perform one bounded reconnaissance pass. Do not repeatedly rediscover the repository or re-read unchanged files.
+2. Search for an existing component, route, API client, service, hook, chart, style token, or Prisma model before creating another one.
+3. Prefer extending an existing file/component/service over creating a parallel implementation.
+4. Make the smallest patch that satisfies the requirement. Do not replace whole files when a focused edit is sufficient.
+5. Do not reformat unrelated code, rename unrelated symbols, restructure folders, or perform opportunistic refactoring.
+6. Do not create duplicate screens, components, API clients, models, endpoints, or data stores.
+7. Reuse installed dependencies. Do not install a package for functionality already available in the project.
+8. Use targeted searches (rg, symbol search, route listing, schema model lookup) and inspect only relevant file sections. Do not dump the entire repository, large files, lockfiles, generated files, or full execution logs into the context.
+9. Do not use multiple agents/subagents or parallel design explorations. Follow the single approved architecture and the order in this document.
+10. Keep progress messages short. Do not repeatedly explain the plan or produce intermediate long reports.
+11. Batch related inspections and edits. After a change, inspect only the affected diff and run the smallest relevant test.
+12. Run the required final build/type-check/test set once after implementation. Do not repeat successful checks unless a subsequent edit could affect them.
+13. If a check fails, inspect the specific error, make a targeted correction, and rerun only the failing check plus directly affected checks.
+14. Do not generate lengthy documentation, comments, sample data, or alternate implementations unless required by the PRD.
+15. Stop when the P0 acceptance criteria pass. Do not continue polishing, expanding scope, or redesigning acceptable components.
+Additional safeguards:
+- Inspect the current Git status before editing; never overwrite user changes or reset the repository.
+- Keep the application runnable after each meaningful milestone.
+- Do not create new models/routes unless source inspection proves they are missing.
+- Do not infer API paths from model names.
+- Do not rewrite the application shell if a focused route/layout change is sufficient.
+- Do not build six copied platform pages; use shared layouts plus platform-specific metric configuration.
+- If real data or credentials are unavailable, implement a truthful Empty/Pending state and continue.
+- Run actual tests/commands; never claim they passed without running them.
+- Do not claim a feature is complete if it is only a static visual placeholder.
+7. Phase 0 — Repository and runtime reconnaissance
+Target: 25–35 minutes. Do not exceed this without identifying a real blocker.
+Inspect
+Frontend:
+- Root and app package.json files and package manager.
+- Vite configuration.
+- React version and router.
+- Current route tree and application shell.
+- Existing Tailwind configuration and design tokens.
+- Existing charting library and map/visualization dependencies.
+- Existing data-fetching library, API client, auth/session handling, and state management.
+- Existing reusable tables, cards, tabs, dropdowns, tooltips, and dialog components.
+Backend:
+- apps/api structure.
+- Integration, synchronization, analytics, dashboard, intelligence modules.
+- Controllers and actual route decorators/prefixes.
+- DTOs and validation.
+- Prisma schema and migration history.
+- Actual Platform, PlatformAccount, IntegrationCredential, SyncRun, SyncError, MetricDefinition, MetricObservation, MetricAggregate, AnalysisRun, Insight, InsightEvidence, Recommendation, and Notification definitions if present.
+- Existing authentication guards and service-to-service authentication patterns.
+- Existing CryptoService, redacting logger, and audit services.
+Runtime/deployment:
+- Docker Compose services and ports.
+- Current UI URL and API URL.
+- Current health endpoint behavior.
+- Current local dev/build/test commands.
+- Git branch and working-tree status.
+Required output before editing
+Create a concise implementation map in the agent's response or a local development note:
+- What exists and can be reused.
+- Which actual routes/models provide Social Monitor data.
+- Which required data or endpoint capabilities are missing.
+- Which frontend routes/components can be reused.
+- Which existing files are unsafe to modify due to unrelated features or uncommitted changes.
+Then immediately start Phase 1. Do not ask the owner to confirm ordinary implementation decisions.
+Gate 0 — Pass conditions
+- Existing project builds or baseline failures are recorded.
+- No working tree changes were overwritten.
+- Exact existing API routes and Prisma models are known.
+- No invented endpoint or model is used.
+8. Phase 1 — Social Monitor-only application shell
+Target: 30–45 minutes.
+Required result
+The product opens directly into /overview (or the existing routing convention mapped to Overview).
+
+Navigation contains only:
+1. Overview
+2. Content Library
+3. Analytics
+4. Audience
+5. Compare
+6. Accounts
+7. Sync Center
+8. AI Analyst (disabled/hidden until configured; may show a small coming-later state)
+9. Settings
+Rules
+- Remove unrelated Chronos/productivity/project/engineering links from the Social Monitor navigation only.
+- Do not delete unrelated routes, modules, services, or database models from the repository.
+- Use the existing router and layout system if practical.
+- Build a narrow icon rail and compact top bar based on the reference image.
+- Provide tooltips for collapsed navigation icons.
+- Add global search only if it can search actual content/account data; otherwise implement a working content search scoped to Content Library and label it accordingly.
+- Top bar contains Platform selector, Account selector, Date Range selector, Last Update, and Manual Sync action.
+- Manual Sync is disabled with an explanatory reason when the selected account is not connected or the trigger is unavailable.
+Gate 1 — Pass conditions
+- No unrelated navigation item appears.
+- Routes resolve without errors.
+- Active navigation is obvious.
+- Desktop and tablet shell does not overflow horizontally.
+9. Phase 2 — Data foundation and Backend adapter
+Target: 45–60 minutes.
+9.1 Build a typed frontend data adapter
+Create or reuse a single API client. Do not call fetch() independently from each page.
+
+Responsibilities:
+- Resolve API base URL from existing environment configuration.
+- Reuse the current authentication/session mechanism.
+- Centralize JSON parsing and error conversion.
+- Validate response shapes at the boundary using existing validation conventions.
+- Expose typed methods/services for Overview, Accounts, Content, Analytics, and Sync.
+- Support consistent loading, empty, stale, and error states.
+Never hardcode a guessed http://localhost:3001 path in components. If local environment configuration already exists, reuse it. If it is missing, add one documented variable such as VITE_API_BASE_URL following the repository's conventions.
+9.2 Map the existing Backend data
+Inspect the real source. Do not assume the known model names have the fields required by the UI.
+
+Minimum logical capabilities:
+- Account list and status.
+- Content/post inventory and metadata.
+- Metric observations and metric definitions.
+- Sync runs/errors and last successful sync.
+- Aggregates/time series when supported.
+- Preferences for Social Monitor modules/widgets.
+Reuse existing services and endpoints wherever possible.
+9.3 Add only the smallest missing Backend pieces
+If a route or data capability is missing:
+1. Identify the exact missing use case.
+2. Check whether an existing service/model can satisfy it.
+3. Add an endpoint to the existing NestJS module following current conventions.
+4. Add or adjust DTOs and validation.
+5. Add a Prisma migration only if the actual schema cannot represent required content/metric relationships.
+6. Reuse PlatformAccount and MetricObservation wherever possible.
+7. Do not create a second SocialAccount/PlatformAccount model or duplicate metric storage.
+8. Add tests for the endpoint/service.
+Do not build OAuth setup during today's UI task because accounts and developer applications are not yet configured.
+9.4 Data modes
+Implement a clear data-source selector in development configuration, not a user-facing confusing toggle:
+- Real mode reads from the Backend.
+- Demo mode reads from isolated local fixtures.
+- Empty mode renders no-data states when there are no connected accounts.
+Never merge Demo and Real datasets.
+Never persist Demo values to production tables.
+Never show Connected for mock accounts.
+Gate 2 — Pass conditions
+- UI reads through one typed API adapter.
+- Verified Backend routes are used.
+- Missing capabilities are documented or added minimally.
+- Backend unavailable does not crash the UI.
+- Empty and Demo modes are visibly distinguishable.
+10. Phase 3 — Design system and reusable analytics components
+Target: 30–45 minutes.
+
+Implement reusable components before making each page independently.
+
+Required components:
+- SocialMonitorShell
+- SidebarRail
+- TopBar
+- PlatformSelector
+- AccountSelector
+- DateRangeSelector
+- MetricCard
+- MetricDelta
+- MetricInfoTooltip
+- TrendChart
+- BreakdownChart
+- ContentTypeBreakdown
+- AudienceLocationPanel
+- ContentPerformanceTable
+- ContentPreview
+- DataFreshnessLabel
+- ConnectionStatus
+- SyncRunRow
+- EmptyState
+- UnavailableMetricState
+- DemoDataBanner
+- ErrorState
+Use existing chart and UI dependencies. Do not add a new charting library if one already exists.
+Platform metric registry
+Create one typed configuration map for supported platform metrics. Each entry should define:
+- Canonical key.
+- Display label.
+- Platform.
+- Source metric key(s).
+- Unit.
+- Aggregation type.
+- Supported content types.
+- Whether it can be shown in Overview.
+- Whether it can be compared within platform.
+- Whether it is compatible for any cross-platform comparison.
+- Availability reason when unsupported.
+Do not use a single generic list as if all metrics are available on every platform.
+Gate 3 — Pass conditions
+- Pages use shared components.
+- Metric units and semantics are visible.
+- There are no fabricated default values.
+- Typography, spacing, borders, and panel styles are consistent.
+11. Phase 4 — Overview Dashboard
+Target: 75–90 minutes. This is the highest-priority design and implementation task.
+Layout
+Desktop main grid:
+- Header row.
+- Four to six compact KPI cards.
+- Main area: wide primary column + narrower right rail.
+- Main large audience/region panel where data is available.
+- Right rail: Content Type Breakdown, Profile Activity, compact Insight panel.
+- Wide lower trend chart.
+- Top Performing Content section beneath or alongside the main analytics based on available height.
+KPI cards
+Select cards based on selected platform(s) and source availability. Possible metrics:
+- Platform-reported Views/Plays.
+- Reach (only if available).
+- Impressions (only if available).
+- Content Interactions.
+- Followers/Subscribers.
+- Published Posts.
+Each card shows:
+- Label.
+- Value.
+- Unit/definition tooltip.
+- Current period.
+- Previous equivalent period and percentage delta only if both values exist and are comparable.
+- Sparkline only when historical values exist.
+- Source/freshness context.
+Main panels
+1. Audience Location: map + country/region distribution only if actual country/region data exists. Otherwise show an unavailable or no-history state.
+2. Primary Trend: metric selector + date range + chart; support daily/cumulative only when mathematically valid for the returned aggregation.
+3. Content Type Breakdown: type distribution using actual content metadata/counts or supported source metrics; state which.
+4. Profile Activity: profile visits, link clicks, follows, and other available activity metrics; never invent them.
+5. Insight Panel: only rule-based evidence-backed insights. If history is insufficient, explain what data is needed.
+6. Top Content: show source platform and selected metric with stable sorting.
+Interaction rules
+- Changing platform/account/date range updates all applicable components.
+- Clicking a KPI opens Analytics with that metric selected.
+- Clicking a post opens Content Detail.
+- Clicking connection state opens Accounts or Sync Center.
+- Tooltips show exact source definition, period, and last collected time.
+Gate 4 — Pass conditions
+- Overview resembles the visual reference in density, hierarchy, and grid.
+- It is not a generic four-card dashboard.
+- All displayed values come from Backend data or clearly marked Demo fixtures.
+- Unavailable audience data does not result in an invented map.
+- Date/platform filters affect charts and KPIs consistently.
+12. Phase 5 — Content Library and Content Detail
+Target: 75–90 minutes.
+Content Library
+Create one cross-platform content inventory with:
+- Platform/source.
+- Thumbnail or safe fallback.
+- Title/caption.
+- Content type.
+- Published time.
+- Platform content ID (visible only where useful; available for traceability).
+- Platform-reported Views/Plays if provided.
+- Reach/Impressions if provided.
+- Likes/Reactions, Comments/Replies, Shares/Reposts, Saves when available.
+- Last metrics update.
+- Data origin: API, CSV, MOCK, or MANUAL.
+Filters:
+- Platform.
+- Account.
+- Date published.
+- Content type.
+- Metric availability.
+- Search query.
+Sorting:
+- Most recent.
+- Highest platform-reported Views/Plays within a platform or metric-compatible selection.
+- Highest interactions using platform-specific definitions.
+- Highest Reach or Impressions within the selected platform.
+Never silently sort unlike metrics together.
+Provide loading, empty, error, and no-match states.
+Content Detail
+Header:
+- Thumbnail/video preview when available.
+- Platform and account.
+- Title/caption.
+- Published time.
+- Original content permalink.
+- Content type.
+Sections:
+1. Performance summary.
+2. Historical metric timeline.
+3. Period-over-period changes.
+4. Comparison to recent same-platform/same-content-type posts.
+5. Metric definitions and collection history.
+Comparison baseline requirements:
+- Same platform.
+- Same content type where possible.
+- Similar age since publication.
+- Same metric definition and unit.
+- Display sample size and comparison window.
+If multiple historical observations do not exist, show Historical trend will appear after multiple successful collections. Do not fabricate milestone points.
+Gate 5 — Pass conditions
+- Search, filters, sorting, and pagination work.
+- Content detail opens from the table/card.
+- Each metric preserves source, unit, and timestamp.
+- Historical chart uses stored observations only.
+13. Phase 6 — Platform Analytics, Audience, and Compare
+Target: 60–75 minutes.
+Platform Analytics
+Use a reusable page template with platform-specific metric configuration. Avoid six separately copied page implementations.
+
+Each platform view contains:
+- Account identity/status.
+- Platform-native KPI row.
+- Metric trend chart.
+- Content performance table.
+- Top and underperforming content.
+- Last successful collection.
+- Unavailable metrics and reasons.
+Audience
+Implement the page shell and data-driven panels:
+- Audience geography.
+- Age/gender only if provider exposes it and account is eligible.
+- Followers/non-followers only where available.
+- Follower/subscriber growth over time.
+- Active audience time only when source data exists.
+If unavailable, render clear explanations. Do not infer demographic/location data from language, account location, or user location.
+Compare
+Implement a basic, honest comparison view:
+- One date range shared across selected platforms.
+- Separate platform values in a comparison matrix.
+- Follower/subscriber growth.
+- Content volume.
+- Platform-reported Views/Plays.
+- Interactions using platform-specific definitions.
+- Reach and Impressions kept separate.
+- Optional normalized index only if formula and baseline are visible.
+Do not create a universal engagement rate or unique cross-platform Reach.
+Gate 6 — Pass conditions
+- Platform-specific pages render metrics based on registry.
+- Unsupported metrics are not shown as zero.
+- Cross-platform comparison labels metric definitions and limitations.
+- Audience panels do not invent demographics.
+14. Phase 7 — Accounts and Sync Center
+Target: 45–60 minutes.
+Accounts
+Six platform cards:
+- YouTube
+- TikTok
+- Instagram
+- Facebook
+- X
+- LinkedIn
+Each shows:
+- Platform icon/name.
+- Account handle/name if known.
+- Account type if known.
+- Connection state.
+- Granted scopes/capabilities if actually known.
+- Last successful sync.
+- Last error.
+- Connect/Reauthorize/Disconnect action only when the related flow actually exists.
+Allowed states:
+- NOT_CONNECTED
+- PENDING_ACCOUNT_SETUP
+- PENDING_APP_REVIEW
+- CONNECTED
+- PARTIAL_ACCESS
+- REAUTH_REQUIRED
+- PERMISSION_MISSING
+- RATE_LIMITED
+- ERROR
+- DISCONNECTED
+Current default should be PENDING_ACCOUNT_SETUP or NOT_CONNECTED unless a real authenticated provider test proves otherwise.
+Sync Center
+Display actual Backend/n8n sync records only:
+- Overall system readiness.
+- Per-platform status.
+- Last run and last successful run.
+- Duration.
+- Records fetched, normalized, validated, rejected, duplicates.
+- Delivery state.
+- Recent run history.
+- Expandable errors and remediation.
+The n8n architecture currently runs mock tests and is unpublished. Reflect that state honestly. Do not pretend test mock runs are real platform syncs.
+
+Manual sync must be disabled unless an authenticated trigger path exists.
+Gate 7 — Pass conditions
+- No false Connected status.
+- No false successful sync.
+- Every status has an understandable explanation.
+- Dashboard never calls n8n directly for its metrics.
+15. Phase 8 — Social Monitor Settings and layout preferences
+Target: 25–35 minutes.
+
+Keep Settings compact. Do not rebuild a large Modules Hub.
+
+Optional social modules:
+- content_library
+- analytics
+- audience_insights
+- cross_platform_comparison
+- ai_analyst
+- sync_center
+Core features that cannot be disabled:
+- Accounts/connection records.
+- Data ingestion.
+- Metric storage.
+- Authentication/security.
+- Basic Overview.
+Toggles:
+- Hide/show navigation area.
+- Hide/show associated Overview widget.
+- Preserve all records.
+- Do not disconnect accounts.
+- Do not disable ingestion unless a separate connector pause action exists and is clearly labeled.
+- Persist settings using existing preference storage if available.
+Dashboard widgets:
+- Show/hide optional widgets.
+- Reset to default layout.
+- Simple ordering if an existing drag-and-drop solution is already installed; otherwise do not build a complicated drag-and-drop editor.
+Gate 8 — Pass conditions
+- Only Social Monitor modules can be toggled.
+- Hiding a module does not delete data.
+- Navigation stays balanced when several optional modules are disabled.
+- Preferences persist after refresh.
+16. Phase 9 — Final quality and browser verification
+Target: 40–50 minutes.
+
+Run actual project scripts discovered during Phase 0. At minimum:
+- Frontend production build.
+- TypeScript/type check.
+- Existing test suite or targeted tests.
+- Backend build/tests if Backend files changed.
+- Prisma validation/migration checks if schema changed.
+- Browser smoke test against the running app.
+Required manual browser checks
+1. Overview default route loads.
+2. Sidebar contains only Social Monitor items.
+3. Platform selector changes visible values.
+4. Date range changes charts/KPIs.
+5. Search and content filters work.
+6. Content row opens correct Detail view.
+7. Missing metrics show unavailable, not 0.
+8. Demo data has a visible persistent banner.
+9. Empty state is useful and polished.
+10. Accounts show honest pending/not connected state.
+11. Sync Center uses actual known state.
+12. Module toggles hide/show correctly and preserve data.
+13. No console errors.
+14. No broken links or inert buttons.
+15. No desktop horizontal overflow at 1280 px and typical 1440 px width.
+16. Tablet layout is usable.
+17. Backend being unavailable produces a graceful error/empty state.
+Final report must say
+- What was inspected.
+- What was implemented.
+- Files changed.
+- API routes/models reused.
+- Backend additions made, if any.
+- Database migrations made, if any.
+- Test commands actually run and results.
+- Screens/pages browser-verified.
+- Remaining blockers and why.
+- Which features are real, demo, empty, or pending.
+PART III — ACCEPTANCE MATRIX
+17. P0 acceptance table
+Area	Must work today	Must not be faked
+App Shell	Social-only navigation and routing	No unrelated Chronos/productivity links
+Overview	Detailed layout, filters, truthful KPIs/empty/demo states	No invented metrics or trend deltas
+Content Library	Search, filters, sort, pagination/limit	No invented posts
+Content Detail	Metadata, available metrics, historical snapshots where stored	No fabricated timeline
+Platform Analytics	Reusable template with platform-specific metric availability	No universal metric assumptions
+Audience	Page and panels for supported data	No fake demographics or geography
+Compare	Side-by-side values with source definitions	No unique reach or universal engagement rate
+Accounts	Six account cards and accurate states	No fake OAuth/Connected state
+Sync Center	Real available sync status and honest mock/unpublished status	No false live sync claim
+Settings	Social-only module toggles and basic widget preferences	No deletion/disconnection on hide
+Backend Adapter	Uses verified existing API routes	No invented endpoint
+n8n	Recognizes current workflow/Backend status through verified data if available	No direct unprotected n8n analytics access
+
+
+18. Time-box and cut line
+Target one focused day. Use the following strict priority:
+
+Must complete (P0):
+1. Reconnaissance.
+2. Social-only shell.
+3. Typed API adapter and actual Backend mapping.
+4. Overview.
+5. Content Library.
+6. Content Detail.
+7. Reusable Platform Analytics.
+8. Accounts.
+9. Sync Center.
+10. Basic Social Settings.
+11. Build/type-check/browser smoke test.
+Do only if P0 is complete:
+- Advanced Audience Map.
+- Rich demographic breakdowns.
+- Advanced Compare indexes.
+- Rule-based Insight Cards.
+- Export CSV.
+Explicitly defer:
+- Conversational LLM Analyst.
+- Content publishing/scheduling.
+- DMs/comments/inbox.
+- Advanced custom report builder.
+- Paid X API.
+- Production OAuth/live connections if accounts are not ready.
+- Cloudflare Tunnel deployment if it would prevent completion of the local UI MVP.
+If time becomes limited, reduce visual extras or P1 scope, not data correctness, type safety, or the core content browsing path.
+PART IV — MASTER PROMPT FOR CARBON 4 (LOW EFFORT)
+Copy the prompt below into Carbon 4 after attaching:
+1. NULL_Social_Monitor_PRD_v1.md
+2. The supplied dark analytics dashboard reference screenshot.
+The prompt is intentionally procedural because the model is running in Low Effort mode. Do not ask it to invent a product or redesign the architecture; it must inspect, follow the sequence, implement, and verify.
+MASTER PROMPT — START
+You are the implementation engineer for NULL Social Monitor.
+
+You have two required source materials attached:
+1. NULL_Social_Monitor_PRD_v1.md — the authoritative product requirements.
+2. The dashboard reference screenshot — the authoritative visual direction.
+Read both before changing code.
+A. Your mission
+Implement the same-day functional MVP of NULL Social Monitor inside the existing repository.
+
+The product is exclusively a detailed Social Media Monitoring and Analytics application for the personal brand null across:
+- YouTube
+- TikTok
+- Instagram
+- Facebook
+- X
+- LinkedIn
+It is not a productivity application, Chronos module, project manager, CRM, publishing tool, or general-purpose Personal OS.
+
+The owner prefers detailed analytics, dense but well-organized information, historical drill-downs, source transparency, and precise explanations. Do not simplify the product into a generic dashboard with four cards and one chart.
+B. Non-negotiable engineering rules
+TOKEN CONSERVATION AND EXISTING-CODE-FIRST RULE — HIGHEST PRIORITY
+
+Carbon 4 is running in Low Effort mode. Minimize token/credit consumption while preserving implementation correctness.
+- Use one concise inspection pass; do not repeatedly scan or re-read the same unchanged files.
+- Search for existing components, routes, API clients, hooks, services, design tokens, schemas, and utilities before creating anything.
+- Modify existing code wherever practical. Prefer small, localized diffs over whole-file rewrites.
+- Never replace a working component merely because you can produce a different version.
+- Do not refactor unrelated code, reformat entire files, rename unrelated items, or reorganize the repository.
+- Reuse current libraries and dependencies; do not install alternatives without a demonstrated blocker.
+- Do not create duplicate components, endpoints, database models, API clients, or storage layers.
+- Read only relevant file sections. Use targeted search and summarize findings instead of printing large files or logs.
+- Do not launch subagents, parallel research tasks, or multiple competing design explorations.
+- Keep tool calls and progress narration concise. Do not spend tokens repeating plans or explaining obvious steps.
+- Make one focused implementation pass per phase, then run targeted verification. Run the complete final checks once.
+- If a test fails, diagnose the specific failure and patch only the responsible code; do not restart the implementation.
+- Do not add optional features, extensive comments, extra documentation, or visual polish outside the stated acceptance criteria.
+- Stop when the P0 acceptance criteria pass and the application is stable. Do not continue iterating for cosmetic perfection.
+- Do not sacrifice data correctness, security, or the existing architecture to save tokens.
+1. Inspect the existing repository before editing.
+2. Preserve the existing React/Vite frontend and NestJS/Prisma/PostgreSQL Backend architecture.
+3. Preserve the existing Docker setup.
+4. Preserve the existing n8n Cloud workflows and central orchestrator. Do not rebuild them.
+5. Do not create a second Backend or database.
+6. Do not delete unrelated Chronos or other Backend modules. Hide unrelated functionality from this product's navigation only.
+7. Do not invent API endpoints, database fields, Prisma relations, or sync states.
+8. Do not fabricate social metrics, posts, audience demographics, account connections, or successful syncs.
+9. Do not write demo/fixture values into production social analytics tables.
+10. Do not connect the UI directly to social platform APIs.
+11. Do not connect the UI directly to n8n for analytics data. The existing Backend remains the UI's data source.
+12. Do not store provider secrets in frontend code, localStorage, or browser-accessible configuration.
+13. Do not change existing database semantics without inspecting migrations and services.
+14. Avoid unnecessary dependencies and full-file rewrites.
+15. Do not spend time on features outside the PRD.
+16. Do not claim a test passed unless you actually ran it.
+17. Keep the application runnable after every implementation phase.
+C. Current known system context — verify before relying on it
+Frontend reported by owner:
+- React 18
+- Vite
+- Tailwind CSS
+- Lucide Icons
+- Local UI: http://127.0.0.1:3000/
+Backend reported by owner:
+- NestJS + TypeScript
+- Prisma
+- PostgreSQL
+- Modular Monolith
+- Local API: http://127.0.0.1:3001/
+- Health endpoint reported: GET /api/health
+Potential existing modules/models include:
+- integrations
+- synchronization
+- analytics
+- intelligence
+- dashboard
+- Platform
+- PlatformAccount
+- IntegrationCredential
+- SyncRun
+- SyncError
+- MetricDefinition
+- MetricObservation
+- MetricAggregate
+- Insight
+- InsightEvidence
+- Recommendation
+These are only leads from the owner. Confirm their real implementation in the repository before using them.
+
+n8n status:
+- 14 existing unpublished workflows.
+- Six platform/import workers.
+- One central orchestrator.
+- Shared normalizer, validator, deduplication, state and delivery adapters.
+- Mock mode only so far.
+- No social credentials or live API integrations yet.
+- Backend Delivery Adapter not yet connected.
+D. Execution method — follow in order
+Do not produce a long speculative plan and stop. Perform a short inspection, report the actual findings, then implement.
+STEP 1 — Inspect the project (maximum 35 minutes)
+Inspect:
+- Git status and current branch.
+- Package manager and scripts.
+- Frontend routes, AppShell, components, styles, and design tokens.
+- Current API client, auth, state management, chart library, and UI components.
+- NestJS modules, controllers, routes, DTOs, services, auth guards.
+- Prisma schema and migrations.
+- Docker Compose services and ports.
+- Current build/test status.
+Do not reset, stash, overwrite, or delete uncommitted user changes.
+
+Before editing, give a concise report:
+- Existing code that can be reused.
+- Actual routes and models available.
+- Missing capabilities, if any.
+- Files you intend to modify.
+Then continue without asking for approval for ordinary implementation choices.
+STEP 2 — Build the Social Monitor AppShell
+Create a Social Monitor-only navigation:
+- Overview
+- Content Library
+- Analytics
+- Audience
+- Compare
+- Accounts
+- Sync Center
+- AI Analyst (disabled/hidden until configured)
+- Settings
+Open the app at Overview by default.
+
+Remove unrelated productivity/project/engineering items from this product's navigation without deleting their code or Backend modules.
+
+Use the screenshot's layout principles:
+- narrow icon sidebar;
+- compact top bar;
+- search area;
+- platform selector;
+- account selector;
+- date-range selector;
+- dark near-black canvas;
+- compact KPI cards;
+- wide main analytics column;
+- right-side breakdown panels;
+- large lower trend chart;
+- small subordinate insight panel.
+Use the PRD's palette and spacing guidance. Do not use neon/glow effects or generic SaaS card layouts.
+STEP 3 — Map the existing Backend; create one typed data access layer
+Inspect the actual API routes and Prisma models.
+
+Create or reuse one typed API client/service layer. All Social Monitor pages must use it.
+
+The client must:
+- use the existing API base URL convention;
+- use the existing auth/session mechanism;
+- centralize error handling;
+- validate response shapes;
+- expose typed methods for Overview, Accounts, Content, Analytics, and Sync;
+- support loading, empty, stale, and error states.
+If the Backend already supports a requirement, reuse it.
+
+If a requirement is missing:
+- add only the smallest capability inside the existing NestJS modular monolith;
+- follow existing controller/DTO/service/Prisma conventions;
+- reuse PlatformAccount and MetricObservation where possible;
+- create no duplicate model;
+- add a migration only when actual schema inspection proves it is necessary;
+- add a test for the addition.
+Do not invent route paths. Use real route decorators and controllers.
+STEP 4 — Implement data modes correctly
+Support:
+- REAL: data returned from the existing Backend.
+- DEMO: isolated frontend fixtures with a clear DEMO DATA marker.
+- EMPTY: polished no-account/no-data states.
+Never combine Demo and Real values.
+Never persist Demo values to production tables.
+Never mark an account Connected without successful real OAuth/provider verification.
+
+Because no platform credentials have been configured, make PENDING_ACCOUNT_SETUP and NOT_CONNECTED states visually clear and useful.
+STEP 5 — Build reusable metric and chart components
+Reuse the installed chart library and existing UI dependencies.
+
+Create reusable components for:
+- MetricCard
+- MetricInfoTooltip
+- DateRangeSelector
+- PlatformSelector
+- AccountSelector
+- TrendChart
+- BreakdownChart
+- AudienceLocationPanel
+- ContentTypeBreakdown
+- ContentPerformanceTable
+- ContentPreview
+- ConnectionStatus
+- DataFreshnessLabel
+- SyncStatusPanel
+- EmptyState
+- UnavailableMetricState
+- DemoDataBanner
+Create a typed platform metric registry. Each metric must preserve source metric key, label, unit, aggregation type, platform availability, and comparison compatibility.
+STEP 6 — Implement Overview first
+This is the most important screen.
+
+Use the reference structure:
+1. Page title and filters.
+2. Four to six compact KPI cards selected according to actual metric availability.
+3. Large main analytics panel for Audience Location when real geography data exists.
+4. Right rail with Content Type Breakdown.
+5. Profile Activity panel where the source provides metrics.
+6. Wide historical trend chart with metric selector.
+7. Small evidence-based insight area.
+8. Top-performing content section.
+Every value must come from the Backend or clearly isolated Demo fixture.
+
+If audience geography or profile activity is unavailable, render an explanation, not fake values or zeros.
+
+Date, platform, and account filters must update the affected cards/charts consistently.
+STEP 7 — Implement Content Library and Content Detail
+Content Library:
+- table/list of posts and videos across the six platforms;
+- thumbnail fallback;
+- caption/title;
+- platform/account;
+- content type;
+- published time;
+- available metrics;
+- last metrics update;
+- API/CSV/DEMO source label;
+- working search, filters, sorting, and pagination or incremental loading.
+Content Detail:
+- content preview and permalink;
+- complete metadata;
+- available performance metrics;
+- historical observations;
+- date/time and metric definitions;
+- same-platform/same-content-type baseline when sufficient sample size exists.
+Do not fabricate historical points. If snapshots are missing, show a useful message explaining that the trend will appear after future successful collections.
+STEP 8 — Implement Analytics, Audience, and Compare
+Use shared page templates and platform-specific metric configuration, not six copies of the same page.
+
+Analytics:
+- platform-specific KPI and trend panels;
+- metric selectors;
+- time-window filters;
+- content performance tables;
+- actual supported metrics only.
+Audience:
+- geography, demographics, follower/non-follower, and active-time panels only if source data supports them;
+- otherwise show explicit unavailable reasons.
+Compare:
+- same date range across platforms;
+- show per-platform values;
+- keep Views, Plays, Reach, and Impressions separate;
+- never show unique cross-platform Reach;
+- never invent a universal Engagement Rate.
+STEP 9 — Accounts and Sync Center
+Accounts:
+- six platform cards;
+- honest connection states;
+- account type and handle only when known;
+- permissions/scopes only when verified;
+- last successful sync and errors only from real records;
+- connect/reauthorize buttons only if actual routes/flows exist.
+Sync Center:
+- actual SyncRun records where available;
+- per-platform status;
+- last run/success;
+- counts and error details;
+- distinguish MOCK, DRY_RUN, NOT_CONFIGURED, and real delivery.
+The current n8n workflows are unpublished/mock-only. Do not display their mock runs as real platform synchronizations.
+STEP 10 — Social-only Settings
+Create compact settings for:
+- content_library
+- analytics
+- audience_insights
+- cross_platform_comparison
+- ai_analyst
+- sync_center
+Core Overview, account records, ingestion, and security cannot be disabled.
+
+Toggles hide/show the relevant Social Monitor navigation/widget only. They never delete data, disconnect accounts, or silently stop synchronization.
+
+Persist using existing preference storage where possible. Do not build a complicated visual layout builder.
+STEP 11 — QA and final verification
+Run actual commands from package scripts.
+
+At minimum:
+- frontend build;
+- type check;
+- relevant tests;
+- backend tests/build if Backend changes were made;
+- Prisma validation if schema changes were made;
+- browser smoke test.
+Verify:
+- Overview loads.
+- Navigation contains only Social Monitor items.
+- Filters work.
+- Content search and filters work.
+- Content Detail works.
+- Metrics preserve null vs zero.
+- Demo banner is visible in demo mode.
+- Connected status is never fabricated.
+- Sync states are honest.
+- Settings toggles preserve data.
+- No console errors.
+- No broken routes or inert controls.
+- Desktop layout works at 1280 px and 1440 px.
+- Tablet layout remains usable.
+- Backend unavailable does not crash the UI.
+E. Data correctness contract — do not violate
+For every metric shown, know:
+- platform;
+- source metric key;
+- canonical metric key;
+- unit;
+- aggregation type;
+- reporting period;
+- collected timestamp;
+- source/provenance;
+- whether comparison is valid.
+Rules:
+- null means unavailable; it is not 0.
+- Views, Plays, Reach, and Impressions are not interchangeable.
+- Followers and Subscribers are not silently merged as identical concepts.
+- Daily, period, lifetime, and snapshot values are distinct.
+- Cross-platform totals must be labeled as sums of platform-reported counters, never unique people/reach.
+- No universal cross-platform engagement rate.
+- Never infer audience demographics or geography.
+- Never state causality from correlation alone.
+- If insufficient observations exist, say so.
+F. Visual quality contract
+The owner strongly prefers detailed analytics. Do not create a generic admin dashboard.
+
+The result must have:
+- high information density;
+- clear visual hierarchy;
+- aligned compact KPI cards;
+- precise chart labels/tooltips;
+- a spacious main analytics grid;
+- a useful right-side breakdown rail;
+- subtle borders and quiet dark surfaces;
+- consistent typography and tabular numeric values;
+- polished loading, empty, error, and unavailable states.
+Avoid:
+- huge blank cards;
+- oversized marketing headings;
+- excessive rounded pills;
+- random gradients and glow;
+- fake map data;
+- placeholder chart lines presented as live;
+- too many sidebar groups;
+- decorative controls with no behavior.
+G. Scope and timebox
+Finish the P0 local functional MVP in one focused day.
+
+Do not add the full LLM Analyst, post publishing, DMs, comments management, advanced reporting, or paid X API integration.
+
+Prioritize:
+1. AppShell.
+2. Verified API/data layer.
+3. Overview.
+4. Content Library.
+5. Content Detail.
+6. Platform Analytics.
+7. Accounts.
+8. Sync Center.
+9. Social Settings.
+10. QA.
+Audience map and advanced comparison refinements are P1 if time remains.
+
+If a real API, account, permission, historical snapshot, route, or metric is unavailable, implement a truthful pending/empty/unavailable state and continue. Never fabricate completion.
+H. Final response format
+Before reporting, verify that no unrelated files or systems were changed. Keep the final report concise and evidence-based. Include only changed files, reused routes/models, tests actually run, and remaining blockers. Do not reproduce the entire implementation plan in the response.
+
+At the end, provide:
+1. Implemented: exact pages and behaviors that work.
+2. Backend reused: exact routes/models/services actually used.
+3. Backend changed: exact files, routes, DTOs, models, and migrations added, if any.
+4. Frontend changed: key files/components/routes.
+5. Data mode: Real, Demo, or Empty for each tested screen.
+6. Tests: exact commands and pass/fail results.
+7. Browser verification: screens checked and viewport sizes.
+8. Limitations: anything still pending because accounts, credentials, API approvals, or data history are missing.
+9. Next required manual actions: only actions the owner must perform.
+Do not claim the product is complete if only the UI shell is built. Do not claim real analytics if only Demo fixtures are used.
+
+Start now: inspect the repository, report actual findings briefly, and implement the first vertical slice. Do not stop at planning.
+MASTER PROMPT — END
+PART V — FINAL OWNER CHECKLIST
+19. What the owner should attach to Carbon 4
+- [ ] NULL_Social_Monitor_PRD_v1.md
+- [ ] The dashboard reference screenshot (attach the actual image file, not only a description).
+- [ ] Open the correct repository/workspace containing the existing frontend and Backend.
+- [ ] Ensure the current local Docker application is running if browser/API verification depends on it.
+- [ ] Do not paste passwords, OAuth secrets, API keys, or tunnel tokens into the prompt.
+- [ ] Confirm the model can inspect/edit the repository and run terminal/browser commands.
+20. Final release decision
+The same-day result should be considered a successful MVP only if:
+- The Social Monitor application is visually coherent and clearly distinct from the old productivity UI.
+- Overview, Content Library, Content Detail, Analytics, Accounts, and Sync Center all work with real Backend responses where available and honest empty/demo states elsewhere.
+- Data semantics are correct.
+- The existing Backend and Docker deployment remain intact.
+- The existing n8n workflows are not rebuilt or damaged.
+- Build/type checks and browser tests pass.
+- Remaining account/API/tunnel dependencies are documented rather than simulated.
+Do not spend another day redesigning the same interface. Deliver the bounded MVP, record real blockers, and move to account/API connection.

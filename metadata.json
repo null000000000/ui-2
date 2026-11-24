@@ -1,0 +1,6 @@
+{
+  "name": "NULL Social Monitor",
+  "description": "Detail-oriented dark social media monitoring and analytics cockpit for the null personal brand across YouTube, TikTok, Instagram, Facebook, X, and LinkedIn.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

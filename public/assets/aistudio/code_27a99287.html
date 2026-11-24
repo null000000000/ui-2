@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXIOM — Brand Identity & Guidelines</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            void: '#090A0B',
+            surface: {
+              lowest: '#0D0E0F',
+              low: '#121314',
+              mid: '#1B1C1D',
+              high: '#292A2B',
+              bright: '#39393A',
+            },
+            outline: {
+              subtle: '#22252A',
+              DEFAULT: '#444748',
+              strong: '#8E9192',
+            },
+            ink: {
+              pure: '#FFFFFF',
+              dim: '#E3E2E3',
+              muted: '#8E9192',
+              faint: '#5D636E',
+            }
+          },
+          fontFamily: {
+            sans: ['Geist', 'IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .grid-bg {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .technical-border {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-void text-ink-dim font-sans antialiased selection:bg-ink-pure selection:text-void min-h-screen">
+
+  <!-- Technical Top Header -->
+  <header class="border-b border-outline-subtle bg-surface-lowest/90 backdrop-blur sticky top-0 z-50 px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-6 space-x-reverse">
+      <!-- Logo Mark -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 border border-outline-subtle rounded bg-surface-low p-1.5 flex items-center justify-center">
+          <img src="https://lh3.googleusercontent.com/aida/ALJJyrC_Yp_rMydcfTXbagwNsJJA5t8fwBht57m2Br1S7q96SCrmu8FvIa7uid53xjNCTYymfN5XDE-Iag2eyb7RIKNaRV-DGdXYJTUNaFOZEr06gUBSwq-Hj34n8MVDEL54qmC4oZBMwKer6_nle-pTbGCohZQRa4nPT04wt7MjqbLrxh1ELVK7ynHA7l3Fsca-dDbi2pl7kXm_FmHlBsSgUzjI-1kw_6J_QMNzG7m2wacs" alt="AXIOM Emblem" class="w-full h-full object-contain filter invert-0">
+        </div>
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase tracking-wider block">IDENTITY MANUAL v1.0</span>
+          <span class="font-bold text-ink-pure tracking-tight text-base font-mono">AXIOM // BRAND GUIDELINES</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-4 text-xs font-mono text-ink-muted">
+      <span class="px-2.5 py-1 rounded border border-outline-subtle bg-surface-mid text-ink-pure">SPEC: 3-TONE MONOCHROME</span>
+      <span class="hidden md:inline">SYSTEM: SOCIAL MONITOR</span>
+      <span class="w-2 h-2 rounded-full bg-ink-pure animate-pulse"></span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-6 py-12 space-y-16">
+
+    <!-- Hero / Brand Vision Statement -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-outline-subtle pb-14">
+      <div class="lg:col-span-7 space-y-5">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded border border-outline-subtle bg-surface-lowest text-xs font-mono text-ink-muted">
+          <span>// BRAND ARCHITECTURE</span>
+          <span class="text-ink-pure">CONFIDENTIAL</span>
+        </div>
+        <h1 class="text-4xl lg:text-5xl font-extrabold text-ink-pure tracking-tight leading-tight">
+          AXIOM
+          <span class="block text-xl lg:text-2xl font-light text-ink-muted mt-2 font-mono">Social Intelligence & Telemetry Infrastructure</span>
+        </h1>
+        <p class="text-base text-ink-muted leading-relaxed max-w-2xl font-normal">
+          نظام الهوية البصرية لعلامة <strong class="text-ink-pure">AXIOM</strong> مبني على مفهوم «الحقيقة غير القابلة للشك» (Ground Truth). يعكس النظام الصلابة المعمارية، النقاء الرياضي، والحياد المطلق للبيانات دون أي تشتيت بصري، معتمدًا على نظام الألوان الأحادي الصارم ثلاثي الدرجات (أسود، رمادي، أبيض).
+        </p>
+      </div>
+
+      <!-- Isometric Visual Feature Card -->
+      <div class="lg:col-span-5 flex justify-center">
+        <div class="relative w-full max-w-md p-8 rounded border border-outline-subtle bg-surface-lowest grid-bg flex flex-col items-center justify-center text-center">
+          <div class="w-48 h-48 mb-4 relative flex items-center justify-center">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrC_Yp_rMydcfTXbagwNsJJA5t8fwBht57m2Br1S7q96SCrmu8FvIa7uid53xjNCTYymfN5XDE-Iag2eyb7RIKNaRV-DGdXYJTUNaFOZEr06gUBSwq-Hj34n8MVDEL54qmC4oZBMwKer6_nle-pTbGCohZQRa4nPT04wt7MjqbLrxh1ELVK7ynHA7l3Fsca-dDbi2pl7kXm_FmHlBsSgUzjI-1kw_6J_QMNzG7m2wacs" alt="AXIOM Isometric Cube" class="w-full h-full object-contain filter drop-shadow-[0_0_25px_rgba(255,255,255,0.06)]">
+          </div>
+          <span class="font-mono text-xs tracking-widest text-ink-muted">THE CORE PRISM MARK // 01</span>
+          <span class="text-xs text-ink-faint mt-1">ISOMETRIC GEOMETRY • 120° AXIS • ZERO TINT</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. The Logo & Anatomy -->
+    <section class="space-y-6">
+      <div class="border-b border-outline-subtle pb-3 flex items-center justify-between">
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase">// SECTION 01</span>
+          <h2 class="text-2xl font-bold text-ink-pure">تشريح الشعار (Logo Mark & Anatomy)</h2>
+        </div>
+        <span class="font-mono text-xs text-ink-muted">RATIO: 1:1 SQUARE BASE</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Mark 1: Geometry -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-4">
+          <div class="h-44 flex items-center justify-center border border-outline-subtle/50 rounded bg-surface-low grid-bg">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrC_Yp_rMydcfTXbagwNsJJA5t8fwBht57m2Br1S7q96SCrmu8FvIa7uid53xjNCTYymfN5XDE-Iag2eyb7RIKNaRV-DGdXYJTUNaFOZEr06gUBSwq-Hj34n8MVDEL54qmC4oZBMwKer6_nle-pTbGCohZQRa4nPT04wt7MjqbLrxh1ELVK7ynHA7l3Fsca-dDbi2pl7kXm_FmHlBsSgUzjI-1kw_6J_QMNzG7m2wacs" alt="Mark" class="w-28 h-28 object-contain">
+          </div>
+          <h3 class="font-bold text-ink-pure text-base font-mono">1. المنشور السداسي (Isometric Prism)</h3>
+          <p class="text-xs text-ink-muted leading-relaxed">
+            مكعب هندسي أيزومتري بحدود بيضاء قاطعة بسماكة متوازنة، يرمز إلى مكعب البيانات متعدد الأبعاد، حيث يمثل كل وجه من الأوجه الثلاثة بُعداً تحليلياً مستقلاً (المحتوى، الجمهور، وسرعة الزخم).
+          </p>
+        </div>
+
+        <!-- Mark 2: Central Focal Node -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-4">
+          <div class="h-44 flex items-center justify-center border border-outline-subtle/50 rounded bg-surface-low grid-bg">
+            <svg class="w-28 h-28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="38" stroke="#22252A" stroke-width="1.5" stroke-dasharray="3 3"/>
+              <circle cx="50" cy="50" r="26" stroke="#444748" stroke-width="1"/>
+              <circle cx="50" cy="50" r="4.5" fill="#FFFFFF"/>
+              <line x1="50" y1="50" x2="50" y2="76" stroke="#FFFFFF" stroke-width="2"/>
+              <line x1="50" y1="50" x2="28" y2="37" stroke="#FFFFFF" stroke-width="2"/>
+              <line x1="50" y1="50" x2="72" y2="37" stroke="#FFFFFF" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-ink-pure text-base font-mono">2. نقطة الارتكاز (Focal Node)</h3>
+          <p class="text-xs text-ink-muted leading-relaxed">
+            نقطة بيضاء ناصعة في مركز التقاء المحاور الثلاثة تمثل نقطة التيليميتري الحية ومصدر الحقيقة الميداني، متصلة بحلقات معايرة رادارية دقيقة تعبر عن المراقبة المستمرة.
+          </p>
+        </div>
+
+        <!-- Mark 3: Wordmark Lockup -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-4">
+          <div class="h-44 flex flex-col items-center justify-center border border-outline-subtle/50 rounded bg-surface-low p-4 text-center">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7">
+                <img src="https://lh3.googleusercontent.com/aida/ALJJyrC_Yp_rMydcfTXbagwNsJJA5t8fwBht57m2Br1S7q96SCrmu8FvIa7uid53xjNCTYymfN5XDE-Iag2eyb7RIKNaRV-DGdXYJTUNaFOZEr06gUBSwq-Hj34n8MVDEL54qmC4oZBMwKer6_nle-pTbGCohZQRa4nPT04wt7MjqbLrxh1ELVK7ynHA7l3Fsca-dDbi2pl7kXm_FmHlBsSgUzjI-1kw_6J_QMNzG7m2wacs" alt="Icon" class="w-full h-full object-contain">
+              </div>
+              <span class="text-2xl font-bold tracking-widest text-ink-pure font-mono">AXIOM</span>
+            </div>
+            <span class="text-[10px] font-mono tracking-widest text-ink-muted mt-2">SOCIAL INTELLIGENCE // 01</span>
+          </div>
+          <h3 class="font-bold text-ink-pure text-base font-mono">3. الشعار المركّب (Wordmark Lockup)</h3>
+          <p class="text-xs text-ink-muted leading-relaxed">
+            الاقتران الأفقي المعتمد بين الأيقونة الهندسية واسم العلامة بخط أحادي عريض متباعد الأحرف (Wide Kerning)، متبوعاً بالوصف التقني المحدد.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. The Strict 3-Tone Color Palette -->
+    <section class="space-y-6">
+      <div class="border-b border-outline-subtle pb-3 flex items-center justify-between">
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase">// SECTION 02</span>
+          <h2 class="text-2xl font-bold text-ink-pure">نظام الألوان الثلاثي الصارم (3-Tone Palette)</h2>
+        </div>
+        <span class="font-mono text-xs text-ink-muted">PURE MONOCHROME • ZERO SATURATION</span>
+      </div>
+
+      <p class="text-sm text-ink-muted">
+        تم تحديد درجات الألوان لتضمن التباين التام والقراءة المريحة للشاشات المعقدة بدون أي تشويش لوني أو تدرجات نيون:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Tone 1: Void Black -->
+        <div class="rounded border border-outline-subtle bg-surface-lowest overflow-hidden">
+          <div class="h-28 bg-[#090A0B] border-b border-outline-subtle flex items-end p-3">
+            <span class="text-xs font-mono text-ink-faint">BASE CANVAS</span>
+          </div>
+          <div class="p-4 space-y-1.5 font-mono">
+            <div class="text-sm font-bold text-ink-pure">Obsidian Void</div>
+            <div class="text-xs text-ink-muted">HEX: #090A0B</div>
+            <div class="text-xs text-ink-faint">الاستخدام: خلفية النظام والمحيط الخارجي</div>
+          </div>
+        </div>
+
+        <!-- Tone 2: Charcoal Surface -->
+        <div class="rounded border border-outline-subtle bg-surface-lowest overflow-hidden">
+          <div class="h-28 bg-[#121314] border-b border-outline-subtle flex items-end p-3">
+            <span class="text-xs font-mono text-ink-faint">PANEL SURFACE</span>
+          </div>
+          <div class="p-4 space-y-1.5 font-mono">
+            <div class="text-sm font-bold text-ink-pure">Deep Surface</div>
+            <div class="text-xs text-ink-muted">HEX: #121314 / #1B1C1D</div>
+            <div class="text-xs text-ink-faint">الاستخدام: بطاقات البيانات والجداول والحاويات</div>
+          </div>
+        </div>
+
+        <!-- Tone 3: Architectural Gray -->
+        <div class="rounded border border-outline-subtle bg-surface-lowest overflow-hidden">
+          <div class="h-28 bg-[#444748] border-b border-outline-subtle flex items-end p-3">
+            <span class="text-xs font-mono text-white">GRID & BORDER</span>
+          </div>
+          <div class="p-4 space-y-1.5 font-mono">
+            <div class="text-sm font-bold text-ink-pure">Telemetry Gray</div>
+            <div class="text-xs text-ink-muted">HEX: #292A2B / #8E9192</div>
+            <div class="text-xs text-ink-faint">الاستخدام: الحدود الدقيقة، الشبكات، والخطوط البيانية الثانوية</div>
+          </div>
+        </div>
+
+        <!-- Tone 4: Stark White -->
+        <div class="rounded border border-outline-subtle bg-surface-lowest overflow-hidden">
+          <div class="h-28 bg-[#FFFFFF] border-b border-outline-subtle flex items-end p-3">
+            <span class="text-xs font-mono text-black font-bold">SIGNAL WHITE</span>
+          </div>
+          <div class="p-4 space-y-1.5 font-mono">
+            <div class="text-sm font-bold text-ink-pure">Absolute White</div>
+            <div class="text-xs text-ink-muted">HEX: #FFFFFF</div>
+            <div class="text-xs text-ink-faint">الاستخدام: الأرقام الحيوية، الأيقونات الفعالة، والعناوين</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Typography & Hierarchy -->
+    <section class="space-y-6">
+      <div class="border-b border-outline-subtle pb-3 flex items-center justify-between">
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase">// SECTION 03</span>
+          <h2 class="text-2xl font-bold text-ink-pure">نظام الخطوط والطباعة (Typography Scale)</h2>
+        </div>
+        <span class="font-mono text-xs text-ink-muted">DUAL FONT SYSTEM: GEIST + JETBRAINS MONO</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Sans Serif: Geist -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-5">
+          <div class="flex items-center justify-between border-b border-outline-subtle pb-2">
+            <span class="font-mono text-xs text-ink-pure font-bold">PRIMARY FONT: GEIST</span>
+            <span class="text-xs text-ink-muted">Interface & UI</span>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <span class="text-xs text-ink-faint font-mono block">HEADLINE DISPLAY // 32px 700</span>
+              <div class="text-3xl font-extrabold text-ink-pure">AXIOM Telemetry Platform</div>
+            </div>
+            <div>
+              <span class="text-xs text-ink-faint font-mono block">SECTION HEADER // 18px 600</span>
+              <div class="text-lg font-semibold text-ink-dim">Real-time Cross-Network Attribution</div>
+            </div>
+            <div>
+              <span class="text-xs text-ink-faint font-mono block">BODY TEXT // 13px 400</span>
+              <p class="text-xs text-ink-muted leading-relaxed">
+                توزيع هادئ ومدروس للمسافات البيضاء مع اعتماد وزن خفيف للنصوص الوصفية لتوجيه انتباه المستخدم نحو المقاييس الحيوية مباشرة.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monospace: JetBrains Mono -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-5">
+          <div class="flex items-center justify-between border-b border-outline-subtle pb-2">
+            <span class="font-mono text-xs text-ink-pure font-bold">METRICS & CODE: JETBRAINS MONO</span>
+            <span class="text-xs text-ink-muted font-mono">Telemetry & Values</span>
+          </div>
+          <div class="space-y-4 font-mono">
+            <div>
+              <span class="text-xs text-ink-faint block">KPI VALUE // 36px Tabular 500</span>
+              <div class="text-3xl text-ink-pure font-bold tracking-tight">1,420,800 <span class="text-xs text-ink-muted font-normal">+42.4%</span></div>
+            </div>
+            <div>
+              <span class="text-xs text-ink-faint block">TIMESTAMP & BADGE // 11px Uppercase</span>
+              <div class="text-xs text-ink-muted bg-surface-high inline-block px-2 py-1 rounded border border-outline-subtle">
+                NODE_LATENCY: 24ms // SYNC: ACTIVE
+              </div>
+            </div>
+            <div>
+              <span class="text-xs text-ink-faint block">DATA ROW RECORD // 12px</span>
+              <div class="text-xs text-ink-dim flex justify-between border-t border-outline-subtle/40 pt-1.5">
+                <span>US_EAST_NODE_01</span>
+                <span class="text-ink-pure">34.2% SHARE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Clear Space, Rules & Usage -->
+    <section class="space-y-6">
+      <div class="border-b border-outline-subtle pb-3 flex items-center justify-between">
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase">// SECTION 04</span>
+          <h2 class="text-2xl font-bold text-ink-pure">قواعد ومساحات الأمان والاستخدام (Usage Rules)</h2>
+        </div>
+        <span class="font-mono text-xs text-ink-muted">DO'S & DONT'S</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Allowed -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-4">
+          <div class="flex items-center gap-2 text-xs font-mono text-ink-pure">
+            <span class="w-2 h-2 rounded-full bg-white"></span>
+            <span class="font-bold">الممارسات المعتمدة (DO)</span>
+          </div>
+          <ul class="space-y-2.5 text-xs text-ink-muted">
+            <li class="flex items-start gap-2">
+              <span class="text-ink-pure font-mono font-bold">✓</span>
+              <span>الحفاظ على نسبة العرض إلى الارتفاع للشعار دون أي تشويه أو تمديد (1:1).</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-pure font-mono font-bold">✓</span>
+              <span>استخدام الخلفيات الداكنة الحصرية (#090A0B إلى #1B1C1D) لضمان بروز الأبيض النقي.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-pure font-mono font-bold">✓</span>
+              <span>ترك مساحة أمان فارغة تعادل ارتفاع نقطة الارتكاز المركزية على الأقل حول الشعار.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-pure font-mono font-bold">✓</span>
+              <span>الالتزام بخط JetBrains Mono في جميع القراءات والرموز التقنية المرافقة.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Prohibited -->
+        <div class="p-6 rounded border border-outline-subtle bg-surface-lowest space-y-4">
+          <div class="flex items-center gap-2 text-xs font-mono text-ink-muted">
+            <span class="w-2 h-2 rounded-full bg-outline-strong"></span>
+            <span class="font-bold">المحظورات الصارمة (DON'T)</span>
+          </div>
+          <ul class="space-y-2.5 text-xs text-ink-muted">
+            <li class="flex items-start gap-2">
+              <span class="text-ink-faint font-mono font-bold">✕</span>
+              <span>إضافة أي ألوان ثانوية مثل الأزرق، الأرجواني، أو التدرجات النيون على اللوجو.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-faint font-mono font-bold">✕</span>
+              <span>استخدام توهج خارجي ضبابي أو ظلال كثيفة ملونة (Drop Shadows ملونة).</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-faint font-mono font-bold">✕</span>
+              <span>تدوير المكعب الأيزومتري بزاوية غير الـ 120 درجة الهندسية القياسية.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-faint font-mono font-bold">✕</span>
+              <span>تغيير سماكة خطوط المكعب أو إزالة نقطة الارتكاز المركزية.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Real-World UI Application Preview -->
+    <section class="space-y-6 border-t border-outline-subtle pt-10">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="font-mono text-xs text-ink-muted uppercase">// SECTION 05</span>
+          <h2 class="text-2xl font-bold text-ink-pure">معاينة التطبيق على واجهة النظام (UI Mockup Preview)</h2>
+        </div>
+        <span class="font-mono text-xs text-ink-muted">DESKTOP SHELL INTEGRATION</span>
+      </div>
+
+      <!-- Compact Mockup Container -->
+      <div class="rounded border border-outline-subtle bg-surface-lowest overflow-hidden p-6 space-y-6">
+        <div class="flex items-center justify-between border-b border-outline-subtle pb-4">
+          <!-- App Header Mockup -->
+          <div class="flex items-center gap-4">
+            <div class="w-7 h-7 bg-surface-high border border-outline-subtle rounded p-1 flex items-center justify-center">
+              <img src="https://lh3.googleusercontent.com/aida/ALJJyrC_Yp_rMydcfTXbagwNsJJA5t8fwBht57m2Br1S7q96SCrmu8FvIa7uid53xjNCTYymfN5XDE-Iag2eyb7RIKNaRV-DGdXYJTUNaFOZEr06gUBSwq-Hj34n8MVDEL54qmC4oZBMwKer6_nle-pTbGCohZQRa4nPT04wt7MjqbLrxh1ELVK7ynHA7l3Fsca-dDbi2pl7kXm_FmHlBsSgUzjI-1kw_6J_QMNzG7m2wacs" alt="Logo" class="w-full h-full object-contain">
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="font-bold text-sm tracking-wider text-ink-pure font-mono">AXIOM</span>
+              <span class="text-xs text-ink-muted">/ Overview</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="px-2.5 py-1 rounded bg-surface-mid border border-outline-subtle text-xs font-mono text-ink-dim">
+              RANGE: LAST 28 DAYS
+            </div>
+            <div class="w-6 h-6 rounded-full border border-outline-subtle bg-surface-high flex items-center justify-center text-[10px] font-mono text-ink-pure">
+              AX
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample Bento Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded border border-outline-subtle bg-surface-low space-y-2">
+            <span class="text-xs font-mono text-ink-muted">TOTAL DETECTED REACH</span>
+            <div class="text-2xl font-mono text-ink-pure font-bold">1,420,800</div>
+            <span class="text-[11px] text-ink-muted font-mono">+8.4% VS PREV CYCLE</span>
+          </div>
+
+          <div class="p-4 rounded border border-outline-subtle bg-surface-low space-y-2">
+            <span class="text-xs font-mono text-ink-muted">GROUND TRUTH ACCURACY</span>
+            <div class="text-2xl font-mono text-ink-pure font-bold">99.8%</div>
+            <span class="text-[11px] text-ink-muted font-mono">VERIFIED PROVIDER METRICS</span>
+          </div>
+
+          <div class="p-4 rounded border border-outline-subtle bg-surface-low space-y-2">
+            <span class="text-xs font-mono text-ink-muted">ACTIVE TELEMETRY NODES</span>
+            <div class="text-2xl font-mono text-ink-pure font-bold">6 / 6 PLATFORMS</div>
+            <span class="text-[11px] text-ink-pure font-mono">ZERO DRIFT CONFIRMED</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Technical Footer -->
+  <footer class="border-t border-outline-subtle bg-surface-lowest py-8 px-8 mt-16 text-center text-xs font-mono text-ink-muted">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>AXIOM BRAND SPECIFICATION • VERSION 1.0.0 • ALL ASSETS SECURED</div>
+      <div>COLOR PROFILE: REC.709 D65 • MONOCHROME MATRIX</div>
+    </div>
+  </footer>
+
+</body>
+</html>
