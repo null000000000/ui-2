@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { SocialMonitorShell } from './components/layout/SocialMonitorShell';
 import { DEFAULT_PLATFORM_ACCOUNTS } from './data/platformDefaults';
@@ -55,7 +55,7 @@ const ROUTE_LABELS: Record<NavRouteId, string> = {
 };
 
 function parseRouteFromHash(): NavRouteId {
-  const hash = window.location.hash.replace(/^#\/?/, '').split('/')[0];
+  const hash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('/')[0];
   if (
     hash === 'overview' ||
     hash === 'content' ||
@@ -67,9 +67,63 @@ function parseRouteFromHash(): NavRouteId {
     hash === 'analyst' ||
     hash === 'settings'
   ) {
-    return hash;
+    return hash as NavRouteId;
   }
   return 'overview';
+}
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Unhandled UI Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 rounded-xl bg-[#121316] border border-[#2A2E35] max-w-2xl mx-auto my-12 space-y-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-[#EF4444]/10 text-[#EF4444] flex items-center justify-center mx-auto text-xl font-bold">
+            !
+          </div>
+          <h2 className="text-lg font-bold text-[#FFFFFF]">Telemetry View Recovered</h2>
+          <p className="text-xs text-[#8A8F98]">
+            An unexpected render issue occurred while formatting platform metrics for this section.
+          </p>
+          <div className="p-3 rounded bg-[#0A0B0D] border border-[#1E2126] text-left font-mono text-[11px] text-[#EF4444] overflow-auto max-h-32">
+            {this.state.error?.message || 'Unknown render error'}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            className="px-4 py-2 rounded-md bg-[#FFFFFF] text-[#000000] text-xs font-semibold cursor-pointer hover:bg-[#E5E5E5] transition-colors"
+          >
+            Reload Section
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default function App() {
@@ -346,7 +400,7 @@ export default function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
       >
-        {renderPage()}
+        <ErrorBoundary key={activeRoute}>{renderPage()}</ErrorBoundary>
       </motion.div>
     </SocialMonitorShell>
   );

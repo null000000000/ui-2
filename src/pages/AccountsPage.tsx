@@ -79,13 +79,31 @@ export const AccountsPage: React.FC<AccountsPageProps> = ({
     reader.readAsText(file);
   };
 
+  const getOAuthParams = () => {
+    const rawSearch =
+      window.location.search ||
+      (window.location.hash.includes('?')
+        ? window.location.hash.slice(window.location.hash.indexOf('?'))
+        : '');
+    const params = new URLSearchParams(rawSearch);
+    return {
+      status: params.get('oauth'),
+      platform: params.get('platform'),
+      message: params.get('message'),
+      page: params.get('page'),
+      channel: params.get('channel'),
+    };
+  };
+
+  const oauth = getOAuthParams();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
           <h1 className="text-2xl font-display font-bold text-[#FFFFFF]">Accounts</h1>
           <span className="text-xs font-mono text-[#666666]">
-            6 sources · hover any card for scopes & n8n route
+            6 sources · hover any card for scopes & actions
           </span>
         </div>
 
@@ -94,9 +112,57 @@ export const AccountsPage: React.FC<AccountsPageProps> = ({
           onClick={onOpenSyncCenter}
           className="px-3 py-1.5 rounded-md bg-[#0B0B0B] border border-[#222222] hover:border-[#404040] text-xs font-medium text-[#FFFFFF] cursor-pointer"
         >
-          n8n Sync Center
+          Sync Center
         </button>
       </div>
+
+      {oauth.status === 'error' && (
+        <div className="p-4 rounded-lg bg-[#2A1215] border border-[#EF4444]/40 text-xs text-[#FCA5A5] flex items-start justify-between gap-3 shadow-lg">
+          <div>
+            <div className="font-semibold text-sm text-[#EF4444] mb-1">
+              {oauth.platform === 'facebook'
+                ? 'Facebook OAuth Authorization Incomplete'
+                : 'OAuth Authorization Incomplete'}
+            </div>
+            <p className="font-mono text-[11px] text-[#FCA5A5]/90 mb-2">
+              {oauth.message || 'Authorization failed.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.hash = '#/accounts';
+            }}
+            className="text-[#A3A3A3] hover:text-[#FFFFFF] p-1 cursor-pointer text-lg leading-none"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {oauth.status === 'success' && (
+        <div className="p-4 rounded-lg bg-[#0E2818] border border-[#22C55E]/40 text-xs text-[#86EFAC] flex items-start justify-between gap-3 shadow-lg">
+          <div>
+            <div className="font-semibold text-sm text-[#22C55E] mb-1">
+              {oauth.platform === 'facebook'
+                ? `Facebook Page "${oauth.page || 'Managed Page'}" Successfully Connected!`
+                : `Account "${oauth.channel || 'Channel'}" Successfully Connected!`}
+            </div>
+            <p className="text-[11px] text-[#A3A3A3]">
+              OAuth 2.0 credentials have been encrypted and stored in PostgreSQL. API scopes verified.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.hash = '#/accounts';
+            }}
+            className="text-[#A3A3A3] hover:text-[#FFFFFF] p-1 cursor-pointer text-lg leading-none"
+          >
+            &times;
+          </button>
+        </div>
+      )}
 
       {/* 6 Minimal Expandable Platform Account Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
@@ -130,6 +196,52 @@ export const AccountsPage: React.FC<AccountsPageProps> = ({
                   <p className="text-[11px] text-[#737373] leading-relaxed">
                     {acc.setupNote}
                   </p>
+                  {acc.platform === 'youtube' && (
+                    <div className="pt-2.5 border-t border-[#1C1C1C] flex items-center justify-between">
+                      <span className="text-[11px] text-[#A3A3A3]">Google OAuth</span>
+                      <a
+                        href="http://127.0.0.1:3001/api/integrations/google/authorize"
+                        className="px-2.5 py-1 rounded bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/30 text-xs font-mono text-[#FF4E4E] transition-colors inline-block cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Authorize Channel &rarr;
+                      </a>
+                    </div>
+                  )}
+                  {acc.platform === 'facebook' && (
+                    <div className="pt-2.5 border-t border-[#1C1C1C] flex items-center justify-between">
+                      <span className="text-[11px] text-[#A3A3A3]">Meta Graph API</span>
+                      <div className="flex items-center gap-2">
+                        {acc.connectionState === 'CONNECTED' ? (
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                const res = await fetch(`http://127.0.0.1:3001/api/integrations/facebook/sync/${acc.id}`, { method: 'POST' });
+                                if (res.ok) {
+                                  window.location.reload();
+                                }
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#1877F2]/15 hover:bg-[#1877F2]/25 border border-[#1877F2]/30 text-xs font-mono text-[#1877F2] transition-colors inline-block cursor-pointer"
+                          >
+                            Sync Page &rarr;
+                          </button>
+                        ) : (
+                          <a
+                            href="http://127.0.0.1:3001/api/integrations/facebook/authorize"
+                            className="px-2.5 py-1 rounded bg-[#1877F2]/15 hover:bg-[#1877F2]/25 border border-[#1877F2]/30 text-xs font-mono text-[#1877F2] transition-colors inline-block cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Authorize Page &rarr;
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               }
             >
@@ -140,7 +252,7 @@ export const AccountsPage: React.FC<AccountsPageProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-display font-semibold text-[#FFFFFF] truncate">
-                      {meta.name}
+                      {acc.displayName || meta.name}
                     </div>
                     <div className="text-[11px] font-mono text-[#666666] truncate">
                       {acc.handle || 'Not linked'}

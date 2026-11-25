@@ -53,6 +53,7 @@ interface ContentLibraryPageProps {
 }
 
 function getInteractions(item: ContentItem): number {
+  if (!item || !item.metrics) return 0;
   return (
     (item.metrics.likes ?? 0) +
     (item.metrics.comments ?? 0) +
@@ -113,8 +114,9 @@ export const ContentLibraryPage: React.FC<ContentLibraryPageProps> = ({
         return false;
       }
       if (q) {
+        const platName = PLATFORM_META[item.platform as PlatformId]?.name || item.platform || '';
         const hay =
-          `${item.title} ${item.caption} ${item.externalId} ${item.accountHandle} ${PLATFORM_META[item.platform].name}`.toLowerCase();
+          `${item.title || ''} ${item.caption || ''} ${item.externalId || ''} ${item.accountHandle || ''} ${platName}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -124,12 +126,12 @@ export const ContentLibraryPage: React.FC<ContentLibraryPageProps> = ({
   const sorted = useMemo(() => {
     const arr = [...filtered];
     arr.sort((a, b) => {
-      if (sortBy === 'views') return (b.metrics.views ?? -1) - (a.metrics.views ?? -1);
+      if (sortBy === 'views') return (b.metrics?.views ?? -1) - (a.metrics?.views ?? -1);
       if (sortBy === 'interactions') return getInteractions(b) - getInteractions(a);
       if (sortBy === 'impressions') {
-        return (b.metrics.impressions ?? -1) - (a.metrics.impressions ?? -1);
+        return (b.metrics?.impressions ?? -1) - (a.metrics?.impressions ?? -1);
       }
-      return b.publishedAt.localeCompare(a.publishedAt);
+      return (b.publishedAt || '').localeCompare(a.publishedAt || '');
     });
     return arr;
   }, [filtered, sortBy]);

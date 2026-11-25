@@ -170,6 +170,113 @@ function isArrayOfObjects<T>(val: unknown): val is T[] {
   return Array.isArray(val);
 }
 
+function transformBackendContentItem(raw: any): ContentItem {
+  if (raw && raw.metrics && typeof raw.metrics === 'object' && raw.platform) {
+    return raw as ContentItem;
+  }
+  const pub =
+    Array.isArray(raw.publications) && raw.publications.length > 0
+      ? raw.publications[0]
+      : null;
+  const platRaw = String(
+    pub?.platformAccount?.platform?.code || raw.platform || 'youtube'
+  ).toLowerCase();
+  const platform: PlatformId =
+    platRaw.includes('yt') || platRaw.includes('youtube')
+      ? 'youtube'
+      : platRaw.includes('tiktok')
+      ? 'tiktok'
+      : platRaw.includes('instagram') || platRaw.includes('ig')
+      ? 'instagram'
+      : platRaw.includes('facebook') || platRaw.includes('fb')
+      ? 'facebook'
+      : platRaw === 'x' || platRaw.includes('twitter')
+      ? 'x'
+      : platRaw.includes('linkedin')
+      ? 'linkedin'
+      : 'youtube';
+
+  const formatRaw = String(
+    pub?.format || raw.contentType || 'VIDEO'
+  ).toUpperCase();
+  const contentType: ContentType =
+    formatRaw === 'SHORT'
+      ? 'Short'
+      : formatRaw === 'REEL'
+      ? 'Reel'
+      : formatRaw === 'CAROUSEL'
+      ? 'Carousel'
+      : formatRaw === 'IMAGE'
+      ? 'Image'
+      : formatRaw === 'TEXT' || formatRaw === 'THREAD'
+      ? 'Text'
+      : formatRaw === 'ARTICLE'
+      ? 'Article'
+      : 'Video';
+
+  const obsList: any[] = Array.isArray(pub?.metricObservations)
+    ? pub.metricObservations
+    : [];
+  const getObsValue = (metricKeyPart: string): number | null => {
+    const found = obsList.find((o) => {
+      const key = String(
+        o?.metricDefinition?.metricKey || o?.metricKey || ''
+      ).toLowerCase();
+      return key.includes(metricKeyPart);
+    });
+    if (!found) return null;
+    const num = parseFloat(String(found.value));
+    return isNaN(num) ? null : num;
+  };
+
+  const publishedAt =
+    pub?.publishedAt ||
+    raw.publishedAt ||
+    raw.createdAt ||
+    new Date().toISOString();
+
+  return {
+    id: String(raw.id || Math.random().toString(36).slice(2)),
+    externalId: String(pub?.externalPostId || raw.externalId || raw.id || ''),
+    platform,
+    accountId: String(pub?.platformAccountId || raw.accountId || ''),
+    accountHandle: String(
+      pub?.platformAccount?.handle || raw.accountHandle || '@founder_builds'
+    ),
+    title: String(pub?.publishedTitle || raw.title || 'Untitled Publication'),
+    caption: String(raw.canonicalSummary || raw.caption || ''),
+    contentType,
+    publishedAt,
+    permalink: String(pub?.url || raw.permalink || ''),
+    thumbnailTone: '#121417',
+    durationSeconds:
+      typeof raw.durationSeconds === 'number' ? raw.durationSeconds : null,
+    source: (raw.source || 'API') as any,
+    lastCollectedAt: String(
+      raw.updatedAt || raw.createdAt || new Date().toISOString()
+    ),
+    metrics: {
+      views: getObsValue('view'),
+      viewsSourceKey: 'platform_views',
+      reach: getObsValue('reach'),
+      reachSourceKey: 'reach',
+      impressions: getObsValue('impression'),
+      impressionsSourceKey: 'impressions',
+      likes: getObsValue('like') ?? getObsValue('reaction'),
+      likesLabel: 'Likes',
+      comments: getObsValue('comment') ?? getObsValue('repl'),
+      commentsLabel: 'Comments',
+      shares: getObsValue('share') ?? getObsValue('repost'),
+      sharesLabel: 'Shares',
+      saves: getObsValue('save') ?? getObsValue('bookmark'),
+      watchTimeMinutes: getObsValue('watch'),
+      avgViewDurationSec: null,
+      linkClicks: getObsValue('click'),
+    },
+    snapshots: [],
+  };
+}
+
 /**
  * Production typed data adapter for AXIOM Social Monitor.
  * Reads live telemetry strictly from the configured n8n / Backend API.
@@ -191,22 +298,13 @@ export async function loadSocialMonitorDataset(): Promise<SocialMonitorDataset> 
   }
 
   try {
-    const [accountsRes, contentRes, seriesRes, audienceRes, syncRes] =
-      await Promise.allSettled([
-        fetchJsonWithTimeout<unknown>(`${apiBaseUrl}/api/integrations/accounts`),
-        fetchJsonWithTimeout<unknown>(`${apiBaseUrl}/api/analytics/content`),
-        fetchJsonWithTimeout<unknown>(`${apiBaseUrl}/api/analytics/timeseries`),
-        fetchJsonWithTimeout<unknown>(`${apiBaseUrl}/api/analytics/audience`),
-        fetchJsonWithTimeout<unknown>(`${apiBaseUrl}/api/synchronization/runs`),
-      ]);
+    const [brandRes, contentRes, syncRes] = await Promise.allSettled([
+      fetchJsonWithTimeout<any>(`${apiBaseUrl}/api/dashboard/brand`),
+      fetchJsonWithTimeout<any>(`${apiBaseUrl}/api/content/items`),
+      fetchJsonWithTimeout<any>(`${apiBaseUrl}/api/synchronization/runs`),
+    ]);
 
-    const allRejected = [
-      accountsRes,
-      contentRes,
-      seriesRes,
-      audienceRes,
-      syncRes,
-    ].every((r) => r.status === 'rejected');
+    const allRejected = [brandRes, contentRes, syncRes].every((r) => r.status === 'rejected');
 
     if (allRejected) {
       return {
@@ -221,29 +319,126 @@ export async function loadSocialMonitorDataset(): Promise<SocialMonitorDataset> 
       };
     }
 
-    const accounts =
-      accountsRes.status === 'fulfilled' &&
-      isArrayOfObjects<PlatformAccount>(accountsRes.value) &&
-      accountsRes.value.length > 0
-        ? accountsRes.value
-        : DEFAULT_PLATFORM_ACCOUNTS;
-    const content =
-      contentRes.status === 'fulfilled' && isArrayOfObjects<ContentItem>(contentRes.value)
-        ? contentRes.value
+    // Merge or overlay accounts from backend
+    let accounts: PlatformAccount[] = DEFAULT_PLATFORM_ACCOUNTS;
+    if (brandRes.status === 'fulfilled' && Array.isArray(brandRes.value?.platforms)) {
+      accounts = DEFAULT_PLATFORM_ACCOUNTS.map((def) => {
+        const foundPlatform = brandRes.value.platforms.find(
+          (p: any) => (p.slug || p.code || p.name || '').toLowerCase() === def.platform
+        );
+        const firstAccount = foundPlatform?.accounts?.[0];
+        if (firstAccount) {
+          return {
+            ...def,
+            id: firstAccount.id || def.id,
+            handle: firstAccount.handle || firstAccount.accountIdentifier || def.handle,
+            displayName: firstAccount.displayName || def.displayName,
+            connectionState: firstAccount.status === 'ACTIVE' ? 'CONNECTED' : def.connectionState,
+            lastSuccessfulSyncAt: firstAccount.lastSyncedAt || def.lastSuccessfulSyncAt,
+          };
+        }
+        return def;
+      });
+    }
+
+    const content: ContentItem[] =
+      contentRes.status === 'fulfilled' && Array.isArray(contentRes.value)
+        ? contentRes.value.map(transformBackendContentItem)
         : [];
-    const dailySeries =
-      seriesRes.status === 'fulfilled' &&
-      isArrayOfObjects<DailySeriesPoint>(seriesRes.value)
-        ? seriesRes.value
-        : [];
-    const audience =
-      audienceRes.status === 'fulfilled' &&
-      isArrayOfObjects<AudienceBreakdown>(audienceRes.value)
-        ? audienceRes.value
-        : [];
-    const syncRuns =
-      syncRes.status === 'fulfilled' && isArrayOfObjects<SyncRunRecord>(syncRes.value)
-        ? syncRes.value
+    const dailySeries: DailySeriesPoint[] = [];
+    const audience: AudienceBreakdown[] = [];
+    const syncRuns: SyncRunRecord[] =
+      syncRes.status === 'fulfilled' && Array.isArray(syncRes.value)
+        ? syncRes.value.map((raw: any, index: number): SyncRunRecord => {
+            const rawStatus = String(raw.status || '').toUpperCase();
+            const status: SyncRunRecord['status'] =
+              rawStatus === 'SUCCEEDED' || rawStatus === 'SUCCESS'
+                ? 'SUCCESS'
+                : rawStatus === 'PARTIAL'
+                ? 'PARTIAL'
+                : rawStatus === 'SKIPPED'
+                ? 'SKIPPED'
+                : 'FAILED';
+
+            const platCode = String(
+              raw.platform ||
+              raw.platformAccount?.platform?.code ||
+              raw.platformAccount?.platform?.name ||
+              ''
+            ).toLowerCase();
+
+            const platform: SyncRunRecord['platform'] =
+              platCode.includes('yt') || platCode.includes('youtube')
+                ? 'youtube'
+                : platCode.includes('tiktok')
+                ? 'tiktok'
+                : platCode.includes('instagram') || platCode.includes('ig')
+                ? 'instagram'
+                : platCode.includes('facebook') || platCode.includes('fb')
+                ? 'facebook'
+                : platCode === 'x' || platCode.includes('twitter')
+                ? 'x'
+                : platCode.includes('linkedin')
+                ? 'linkedin'
+                : 'orchestrator';
+
+            const startedAt = raw.startedAt || new Date().toISOString();
+            const finishedAt = raw.completedAt || raw.finishedAt || null;
+            let durationMs = raw.durationMs ?? null;
+            if (durationMs === null && startedAt && finishedAt) {
+              const diff = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+              durationMs = isNaN(diff) || diff < 0 ? null : diff;
+            }
+
+            return {
+              runId: raw.id || raw.runId || `run-${index + 1}`,
+              workflowNumber: raw.workflowNumber || `WF-${String(index + 1).padStart(2, '0')}`,
+              workflowName:
+                raw.workflowName ||
+                (platform === 'orchestrator'
+                  ? 'Social Telemetry Ingestion'
+                  : `${PLATFORM_META[platform]?.name || platform} Sync Pipeline`),
+              platform,
+              status,
+              deliveryState:
+                raw.deliveryState ||
+                (status === 'SUCCESS'
+                  ? 'DELIVERED'
+                  : status === 'FAILED'
+                  ? 'RETRY_SCHEDULED'
+                  : 'PENDING'),
+              startedAt,
+              finishedAt,
+              durationMs,
+              recordsFetched: typeof raw.recordsFetched === 'number' ? raw.recordsFetched : 0,
+              recordsNormalized:
+                typeof raw.recordsNormalized === 'number'
+                  ? raw.recordsNormalized
+                  : typeof raw.recordsFetched === 'number'
+                  ? raw.recordsFetched
+                  : 0,
+              recordsValidated:
+                typeof raw.recordsValidated === 'number'
+                  ? raw.recordsValidated
+                  : typeof raw.recordsPersisted === 'number'
+                  ? raw.recordsPersisted
+                  : 0,
+              recordsRejected:
+                typeof raw.recordsRejected === 'number'
+                  ? raw.recordsRejected
+                  : Array.isArray(raw.errors)
+                  ? raw.errors.length
+                  : 0,
+              recordsDuplicate:
+                typeof raw.recordsDuplicate === 'number' ? raw.recordsDuplicate : 0,
+              errorMessage: raw.errorMessage || (raw.errors?.[0]?.message ?? null),
+              remediation:
+                raw.remediation ||
+                (raw.errors?.[0]
+                  ? 'Inspect connector credentials and retry manual sync from n8n.'
+                  : null),
+            };
+          })
         : [];
 
     return {
@@ -359,8 +554,8 @@ export function computeEvidenceInsights(
   const contentInWindow = dataset.content.filter(
     (c) =>
       (platformFilter === 'all' || c.platform === platformFilter) &&
-      c.publishedAt.slice(0, 10) >= dateRange.startDate &&
-      c.publishedAt.slice(0, 10) <= dateRange.endDate
+      (c.publishedAt ? c.publishedAt.slice(0, 10) >= dateRange.startDate : false) &&
+      (c.publishedAt ? c.publishedAt.slice(0, 10) <= dateRange.endDate : false)
   );
 
   if (series.length === 0 && contentInWindow.length === 0) {
@@ -498,4 +693,25 @@ export function computeEvidenceInsights(
   }
 
   return insights;
+}
+
+export async function triggerManualSync(platform?: string): Promise<{ success: boolean; message: string }> {
+  const apiBaseUrl = getConfiguredApiBaseUrl();
+  if (!apiBaseUrl) {
+    return { success: false, message: 'Backend API URL not configured.' };
+  }
+  try {
+    const res = await fetch(`${apiBaseUrl}/api/synchronization/trigger`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ scope: 'SOCIAL', platform: platform || 'all' }),
+    });
+    if (!res.ok) {
+      throw new Error(`Server returned HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return { success: true, message: `Sync triggered successfully (Run ID: ${data.syncRunId || 'OK'})` };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : 'Failed to trigger sync' };
+  }
 }

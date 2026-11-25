@@ -58,14 +58,18 @@ export const PlatformIcon: React.FC<{
 };
 
 export const PlatformLabel: React.FC<{
-  platform: PlatformId;
+  platform: PlatformId | 'orchestrator' | string;
   showShort?: boolean;
 }> = ({ platform, showShort = false }) => {
-  const meta = PLATFORM_META[platform];
+  const meta = (platform && PLATFORM_META[platform as PlatformId]) || {
+    id: (platform as any) || 'orchestrator',
+    name: platform === 'orchestrator' ? 'Orchestrator' : (platform ? String(platform).toUpperCase() : 'Pipeline'),
+    shortName: platform === 'orchestrator' ? 'ORCH' : (platform ? String(platform).toUpperCase().slice(0, 4) : 'PIPE'),
+  };
   return (
     <span className="inline-flex items-center gap-1.5 text-[#FFFFFF] whitespace-nowrap">
       <span className="inline-flex shrink-0 text-[#B5B5B5]">
-        <PlatformIcon platform={platform} className="w-3.5 h-3.5" />
+        <PlatformIcon platform={platform as PlatformId} className="w-3.5 h-3.5" />
       </span>
       <span>{showShort ? meta.shortName : meta.name}</span>
     </span>

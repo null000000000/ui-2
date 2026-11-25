@@ -130,8 +130,8 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       dataset.content.filter(
         (c) =>
           (platformFilter === 'all' || c.platform === platformFilter) &&
-          c.publishedAt.slice(0, 10) >= dateRange.startDate &&
-          c.publishedAt.slice(0, 10) <= dateRange.endDate
+          (c.publishedAt ? c.publishedAt.slice(0, 10) >= dateRange.startDate : true) &&
+          (c.publishedAt ? c.publishedAt.slice(0, 10) <= dateRange.endDate : true)
       ),
     [dataset.content, platformFilter, dateRange]
   );
@@ -169,8 +169,8 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
     const pool = filteredContent.length > 0 ? filteredContent : allPlatformContent;
     return [...pool]
       .sort((a, b) => {
-        const aScore = a.metrics.views ?? a.metrics.impressions ?? (a.metrics.likes ?? 0);
-        const bScore = b.metrics.views ?? b.metrics.impressions ?? (b.metrics.likes ?? 0);
+        const aScore = a.metrics?.views ?? a.metrics?.impressions ?? (a.metrics?.likes ?? 0);
+        const bScore = b.metrics?.views ?? b.metrics?.impressions ?? (b.metrics?.likes ?? 0);
         return bScore - aScore;
       })
       .slice(0, 4);
